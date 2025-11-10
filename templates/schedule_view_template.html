@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Расписание: {{ group_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Скрипт-мост Telegram -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--tg-theme-bg-color, #f0f4f8);
+        color: var(--tg-theme-text-color, #1e293b);
+      }
+      .themed-container {
+        background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+      }
+      .nav-button-active {
+        background-color: var(--tg-theme-button-color, #3b82f6);
+        color: var(--tg-theme-button-text-color, #ffffff);
+      }
+      .nav-button-inactive {
+        background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+        color: var(--tg-theme-text-color, #1e293b);
+      }
+      .info-panel {
+        background-color: var(--tg-theme-secondary-bg-color, #fafafa);
+        border-left-color: var(--tg-theme-button-color, #3b82f6);
+      }
+    </style>
+</head>
+<body class="p-2 sm:p-4">
+    <div class="container mx-auto max-w-4xl p-3 sm:p-4 rounded-xl themed-container shadow-lg">
+        <header class="mb-4 pt-2">
+            <div class="flex items-center justify-between relative">
+                <!-- Кнопка "Закрыть" -->
+                <button id="close-button" class="p-2 rounded-full hover:bg-gray-200/50 transition-colors z-10">
+                    <svg class="w-6 h-6" style="color: var(--tg-theme-hint-color, #6b7280);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+
+                <div class="absolute inset-x-0 top-0 flex flex-col items-center justify-center pt-1">
+                    <h2 class="text-lg md:text-xl font-bold text-center">{{ group_name }}</h2>
+                    <p class="text-sm mt-0.5 text-center" style="color: var(--tg-theme-hint-color, #6b7280);">{{ display_title }}</p>
+                </div>
+                 <!-- Пустой div для симметрии -->
+                <div class="w-10"></div>
+            </div>
+        </header>
+
+        <nav class="flex justify-center space-x-2 p-1.5 rounded-full shadow-inner" style="background-color: var(--tg-theme-bg-color, #e5e7eb);">
+            <a href="/schedule/{{ group_name_encoded }}?view_type=today" class="px-3 py-2 rounded-full font-semibold transition-all duration-300 text-sm md:text-base flex-1 text-center {% if view_type == 'today' %}nav-button-active shadow-md{% else %}nav-button-inactive{% endif %}">Сегодня</a>
+            <a href="/schedule/{{ group_name_encoded }}?view_type=tomorrow" class="px-3 py-2 rounded-full font-semibold transition-all duration-300 text-sm md:text-base flex-1 text-center {% if view_type == 'tomorrow' %}nav-button-active shadow-md{% else %}nav-button-inactive{% endif %}">Завтра</a>
+            <a href="/schedule/{{ group_name_encoded }}?view_type=week" class="px-3 py-2 rounded-full font-semibold transition-all duration-300 text-sm md:text-base flex-1 text-center {% if view_type == 'week' %}nav-button-active shadow-md{% else %}nav-button-inactive{% endif %}">Неделя</a>
+        </nav>
+
+        <div class="info-panel p-3 border-l-4 rounded-md text-sm my-4">
+            <p>Неделя: <b>{{ week_type_display }}</b></p>
+            <p class="text-xs mt-1" style="color: var(--tg-theme-hint-color, #6b7280);">
+                <b>{{ replacements_applied_to }}</b>. Кэш замен от: {{ cache_time }}
+            </p>
+        </div>
+
+        <main id="schedule-container">
+            <!-- Ваш цикл Jinja2 для вывода расписания остается здесь -->
+            <!-- ... -->
+        </main>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        // Показываем кнопку "Закрыть" и привязываем к ней действие
+        const closeButton = document.getElementById('close-button');
+        closeButton.addEventListener('click', () => {
+            tg.close();
+        });
+
+        // Можно настроить цвет хедера Telegram под цвет вашего приложения
+        tg.setHeaderColor('secondary_bg_color');
+
+        // Пример: если на странице есть что сохранить, можно показать главную кнопку
+        // tg.MainButton.setText("Сохранить");
+        // tg.MainButton.show();
+        // tg.MainButton.onClick(() => {
+        //     tg.sendData(JSON.stringify({ action: 'save' }));
+        // });
+    </script>
+</body>
+</html>
