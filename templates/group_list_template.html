@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Выбор группы</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Скрипт-мост Telegram -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--tg-theme-bg-color, #f0f4f8);
+        color: var(--tg-theme-text-color, #1e293b);
+      }
+      /* Стили для поля ввода, чтобы они совпадали с темой Telegram */
+      .themed-input {
+        background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+        border: 1px solid var(--tg-theme-hint-color, #d1d5db);
+        color: var(--tg-theme-text-color, #1e293b);
+      }
+      .themed-input::placeholder {
+        color: var(--tg-theme-hint-color, #9ca3af);
+      }
+      /* Стили для карточки группы */
+      .group-card {
+        background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+        color: var(--tg-theme-text-color, #1e293b);
+        border: 1px solid transparent;
+      }
+      .group-card:hover {
+        border-color: var(--tg-theme-button-color, #3b82f6);
+        background-color: var(--tg-theme-secondary-bg-color, #fafafa);
+      }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="max-w-md mx-auto">
+        <header class="my-4 text-center">
+            <h1 class="text-3xl font-extrabold">Выбор группы</h1>
+            <p class="mt-2" style="color: var(--tg-theme-hint-color, #6b7280);">Найдите вашу группу в списке</p>
+        </header>
+
+        <div id="saved-group-container" class="space-y-3 mb-4" style="display:none;">
+            <!-- Сохраненная группа будет здесь -->
+        </div>
+
+        <div class="relative mb-6">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg class="h-5 w-5" style="color: var(--tg-theme-hint-color, #9ca3af);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <form method="get" action="/groups">
+                <input
+                    type="search"
+                    name="search"
+                    placeholder="Поиск..."
+                    value="{{ search_term | default('') }}"
+                    class="w-full pl-12 pr-4 py-3 text-lg rounded-xl shadow-inner outline-none transition-all themed-input"
+                />
+            </form>
+        </div>
+
+        <main class="space-y-2">
+            {% for group in groups %}
+                <div onclick="selectGroup('{{ group }}')" class="group-card p-4 rounded-xl shadow-sm cursor-pointer transition-all duration-200 flex justify-between items-center">
+                    <p class="text-lg font-medium">{{ group }}</p>
+                    <svg class="w-5 h-5 transition-colors" style="color: var(--tg-theme-hint-color, #d1d5db);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                </div>
+            {% else %}
+                <div class="text-center py-10 px-4 rounded-lg">
+                    <p style="color: var(--tg-theme-hint-color, #6b7280);">Группа не найдена</p>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready(); // Сообщаем Telegram, что приложение готово
+
+        // Скрываем основную кнопку, так как она не нужна на этой странице
+        tg.MainButton.hide();
+
+        const SAVED_GROUP_KEY = 'schedule_saved_group';
+        const savedGroupContainer = document.getElementById('saved-group-container');
+
+        function selectGroup(groupName) {
+            localStorage.setItem(SAVED_GROUP_KEY, groupName);
+            window.location.href = `/schedule/${encodeURIComponent(groupName)}?view_type=today`;
+        }
+
+        function loadSavedGroup() {
+            const savedGroup = localStorage.getItem(SAVED_GROUP_KEY);
+            if (!savedGroup) return;
+
+            const encodedName = encodeURIComponent(savedGroup);
+            savedGroupContainer.innerHTML = `
+                <div onclick="window.location.href='/schedule/${encodedName}?view_type=today'"
+                    class="p-4 rounded-xl shadow-md cursor-pointer text-left flex justify-between items-center"
+                    style="background-color: var(--tg-theme-button-color, #3b82f6); color: var(--tg-theme-button-text-color, #ffffff);">
+                    <div>
+                        <p class="text-xs font-semibold opacity-80 uppercase tracking-wider">Ваша группа</p>
+                        <p class="text-xl font-bold">${savedGroup}</p>
+                    </div>
+                    <svg class="w-6 h-6 opacity-70" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                </div>
+            `;
+            savedGroupContainer.style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadSavedGroup);
+    </script>
+</body>
+</html>
