@@ -1,0 +1,5 @@
+starlette
+uvicorn
+httpx
+beautifulsoup4
+jinja2
